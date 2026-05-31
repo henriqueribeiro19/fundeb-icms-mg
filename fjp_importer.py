@@ -132,6 +132,13 @@ def processar_excel(caminho: Path, ano: int) -> pd.DataFrame | None:
             .str.replace(r"\.0$", "", regex=True)
             .str.zfill(7)
         )
+        # Remover entradas sem IBGE válido, que geralmente são notas de rodapé
+        # ou metadados da planilha e não correspondem a municípios.
+        valid_cod = df["cod_ibge"].str.match(r"^\d{7}$", na=False)
+        if not valid_cod.all():
+            invalid = len(valid_cod) - valid_cod.sum()
+            print(f"  ⚠️ {invalid} linhas removidas por cod_ibge inválido")
+            df = df[valid_cod].copy()
 
     # Calcular IQE a partir dos componentes
     pesos = {"IRAP": 0.50, "IRE": 0.20, "IAE": 0.15, "IGE": 0.15}

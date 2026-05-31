@@ -260,6 +260,14 @@ def coletar_todos_anos(anos: list[int] = ANOS_COLETA) -> pd.DataFrame:
         if col in df_total.columns:
             df_total[col] = pd.to_numeric(df_total[col], errors="coerce")
 
+    if "cod_ibge" in df_total.columns:
+        df_total["cod_ibge"] = df_total["cod_ibge"].astype(str).str.strip()
+        valid_cod = df_total["cod_ibge"].str.match(r"^\d{7}$", na=False)
+        if not valid_cod.all():
+            invalid = int((~valid_cod).sum())
+            logger.warning(f"Removendo {invalid} registros FJP sem cod_ibge válido")
+            df_total = df_total[valid_cod].copy()
+
     salvar_parquet(df_total, "fjp_indices")
     logger.success(f"FJP: {len(df_total)} registros coletados ({len(anos)} anos).")
     return df_total

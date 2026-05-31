@@ -28,9 +28,15 @@ st.caption("Calcule o IE, IQE e estimativa de repasse para qualquer município")
 @st.cache_data(ttl=3600)
 def carregar_fjp() -> pd.DataFrame:
     path = Path("data/processed/fjp_indices.parquet")
-    if path.exists():
-        return pd.read_parquet(path)
-    return pd.DataFrame()
+    if not path.exists():
+        return pd.DataFrame()
+
+    df = pd.read_parquet(path)
+    if "cod_ibge" in df.columns:
+        df["cod_ibge"] = df["cod_ibge"].astype(str).str.strip()
+        df = df[df["cod_ibge"].str.match(r"^\d{7}$", na=False)].copy()
+    df = df[df["municipio"].astype(str).str.strip().ne("")].copy()
+    return df
 
 
 @st.cache_data(ttl=3600)

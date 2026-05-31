@@ -165,6 +165,16 @@ def consolidar(anos: list[int] = ANOS_COLETA) -> pd.DataFrame:
         if col not in df_final.columns:
             df_final[col] = None
 
+    # Remover registros sem código IBGE válido para preservar a contagem
+    # de municípios e o vínculo correto com o GeoJSON.
+    if "cod_ibge" in df_final.columns:
+        valid_cod = df_final["cod_ibge"].astype(str).str.match(r"^\d{7}$", na=False)
+        if not valid_cod.all():
+            logger.warning(
+                f"Removendo {int((~valid_cod).sum())} registros sem cod_ibge válido"
+            )
+            df_final = df_final[valid_cod].copy()
+
     df_final["ano"] = df_final["ano"].astype(int)
     df_final = df_final.sort_values(["ano", "municipio"]).reset_index(drop=True)
 
