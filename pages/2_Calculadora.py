@@ -1,7 +1,14 @@
 from __future__ import annotations
+import os
+import sys
 import pandas as pd
 import streamlit as st
 from pathlib import Path
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 from calculadora.formulas import (
     calcular_iqe, calcular_ie, calcular_repasse_icms,
     calcular_coef_vaar, calcular_repasse_vaar,
